@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import rospy
 import mavros_msgs
@@ -290,7 +291,7 @@ class MAV:
                 
             inicial = LatLon(Latitude(self.global_pose.latitude), Longitude(self.global_pose.longitude)) 
             actual_dist = inicial.distance(final)
-            else:
+            if actual_dist > K*inicial_distance:
                 self.gps_target.pose.position.latitude = self.global_pose.latitude + ((K)*(lat - self.global_pose.latitude))
                 self.gps_target.pose.position.longitude = self.global_pose.longitude + ((K)*(lon - self.global_pose.longitude))
                 self.gps_target.pose.position.altitude = self.drone_pose.pose.position.z
