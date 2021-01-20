@@ -8,7 +8,7 @@ Aqui pode ser encontrada a documentação completa da classe MAV.
 ## Sobre a classe
 
 A classe MAV tem o objetivo de compilar as principais funções de controle de drones, usando ROS. O **arquivo original** pode ser encontrado no package 
-viscon em ```viscon/src/viscon``` .
+viscon em ```mavbase/src/mavbase``` .
 
 ## Mensagens
 
