@@ -115,6 +115,29 @@ class MAV:
         self.global_pose = global_data
 
     ####### Set Position and Velocity ################
+    def set_position_target(self, type_mask, x_position=0, y_position=0, z_position=0, x_velocity=0, y_velocity=0, z_velocity=0, x_aceleration=0, y_aceleration=0, z_aceleration=0, yaw=0, yaw_rate=0):
+        self.pose_target.coordinate_frame = PositionTarget.FRAME_LOCAL_NED
+        self.pose_target.type_mask = type_mask
+        #https://mavlink.io/en/messages/common.html#POSITION_TARGET_TYPEMASK
+        #4095 ignores every dimension (subtract the usefull ones from it)
+
+        self.pose_target.position.x = x_position
+        self.pose_target.position.y = y_position
+        self.pose_target.position.z = z_position
+
+        self.pose_target.velocity.x = x_velocity
+        self.pose_target.velocity.y = y_velocity
+        self.pose_target.velocity.z = z_velocity
+
+        self.pose_target.acceleration_or_force.x = x_aceleration
+        self.pose_target.acceleration_or_force.y = y_aceleration
+        self.pose_target.acceleration_or_force.z = z_aceleration
+
+        self.pose_target.yaw = yaw
+        self.pose_target.yaw_rate = yaw_rate
+
+        self.target_pub.publish(self.pose_target)
+
     def set_position(self, x, y, z):
         self.goal_pose.pose.position.x = x
         self.goal_pose.pose.position.y = y
