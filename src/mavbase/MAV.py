@@ -31,6 +31,7 @@ mavros_pose_target_sub = rospy.get_param("/mavros_pose_target_sub")
 mavros_global_position_sub = rospy.get_param("/mavros_global_position_sub")
 mavros_set_global_pub = rospy.get_param("/mavros_set_global_pub")
 
+
 #mavros_local_position_pub    = '/mavros/setpoint_position/local'
 #mavros_velocity_pub          = '/mavros/setpoint_velocity/cmd_vel'
 #mavros_local_atual           = '/mavros/local_position/pose'
@@ -49,6 +50,7 @@ class MAV:
         self.desired_state = ""
         self.drone_pose = PoseStamped()
         self.goal_pose = PoseStamped()
+        self.pose_target = PositionTarget()
         self.goal_vel = TwistStamped()
         self.drone_state = State()
         self.battery = BatteryState()
