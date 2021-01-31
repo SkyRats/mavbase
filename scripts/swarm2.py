@@ -11,9 +11,10 @@ from mavbase.Swarm import SWARM, Bee
 
 
 if __name__ == '__main__':
-    rospy.init_node('swarm')
+    rospy.init_node("swarm")
     mav1 = "mav1"
     mav2 = "mav2"
     swarm = SWARM(2)
-    swarm.takeoff(3)
-    swarm.land()
+    #run_delivery receives the latitude and longitude of the availiable drop zone
+    swarm.run_delivery(-93.5, 27.1)
+    

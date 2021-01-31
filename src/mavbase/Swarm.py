@@ -4,12 +4,14 @@ import rospy
 import mavros_msgs
 from mavros_msgs import srv
 from mavros_msgs.srv import SetMode, CommandBool
-from geometry_msgs.msg import PoseStamped, TwistStamped
+from geometry_msgs.msg import PoseStamped, TwistStamped, Vector3Stamped
 from mavros_msgs.msg import State, ExtendedState, PositionTarget
 from geographic_msgs.msg import GeoPoseStamped
 from sensor_msgs.msg import BatteryState, NavSatFix
+from std_msgs.msg import Bool
 import math
 import time
+import numpy as np
 
 TOL = 0.5
 TOL_GLOBAL = 0.000005
@@ -247,6 +249,83 @@ class SWARM:
         for mav in self.mavs:
             for i in range(100):
                 self.set_position(mav.drone_pose.pose.position.x, mav.drone_pose.pose.position.y, altitude)
+
+    def get_cartesian(self, lat,lon):
+        lat, lon = np.deg2rad(lat), np.deg2rad(lon)
+        R = 6371 # radius of the earth
+        x = R * np.cos(lat) * np.cos(lon)
+        y = R * np.cos(lat) * np.sin(lon)
+        #z = R *np.sin(lat)
+
+        return x,y
+
+    def run_delivery(self, lat, lon):
+        height = 10
+
+        self.takeoff(height)
+        self.rate.sleep()
+
+        init_lat = self.mavs[0].global_pose.latitude  # inicial latitude of the fisrt drone in the vector
+        init_lon = self.mavs[0].global_pose.longitude  # inicial longitude of the fisrt drone in the vector
+
+        ### CONVERSAO GLOBAL - CARTESIANO ###
+
+        init_x, init_y = self.get_cartesian(init_lat, init_lon)
+        final_x, final_y = self.get_cartesian(lat, lon)
+
+        # taking into consideration where the drone inicially is 
+        dist_x = final_x - init_x
+        sinal_x = 1
+        if dist_x < 0:
+            sinal_x = -1
+
+        dist_y = final_y - init_y
+        sinal_y = -1
+        if dist_y < 0:
+            sinal_y = 1
+
+        dist_tot = (dist_x**2 + dist_y**2)**(1/2)
+
+        ### PARAMETRIZACAO ###
+
+        velocity = 1
+        init_time = rospy.get_rostime().secs
+
+        for mav in self.mavs:
+            rospy.logwarn("GLOBAL POSE: " + str(mav.global_pose))
+            rospy.logwarn("LOCAL POSE: " + str(mav.drone_pose.pose.position))
+            rospy.logwarn("GOAL POSE: x: " + str(dist_x) + " y:" + str(dist_y))
+
+        actual_x = init_x
+        actual_y = init_y
+        actual_dist = dist_tot
+
+        while actual_dist >= TOL_GLOBAL and not rospy.is_shutdown():
+            sec = rospy.get_rostime().secs 
+            time = sec - init_time 
+
+            # calculando o polinomio     
+            p_x = ((-2 * (velocity**3) * (time**3)) / abs(dist_x)**2) + ((3*(time**2) * (velocity**2))/abs(dist_x))
+            p_y = (p_x / abs(dist_x)) * abs(dist_y)
+
+            self.set_position(sinal_x * p_x, sinal_y * p_y, self.mavs[0].drone_pose.pose.position.z)
+            self.rate.sleep()
+
+            actual_x = self.mavs[0].drone_pose.pose.position.x
+            actual_y = self.mavs[0].drone_pose.pose.position.y
+            actual_dist = ((dist_x-actual_x)**2 + (dist_y - actual_y)**2)**(1/2)
+
+            #for mav in swarm.mavs:
+            #    rospy.logwarn("GLOBAL POSE: " + str(mav.global_pose))
+            for mav in self.mavs:
+                #rospy.logwarn("GLOBAL POSE: " + str(mav.global_pose))
+                rospy.logwarn("LOCAL POSE: " + str(mav.drone_pose.pose.position))
+                rospy.logwarn("GOAL POSE: x: " + str(dist_x) + " y:" + str(dist_y))
+
+        rospy.logwarn("PACKAGE DELIVERED ON DROP ZONE")
+
+        self.rate.sleep()
+        self.land()
 
 if __name__ == '__main__':
     mav1 = "mav1"
