@@ -9,10 +9,14 @@ def go():
 
     rospy.init_node("mav_test")
     mav = MAV("1")
-    testing = True
-    takeoff_alt = float(input("Enter takeoff altitude (in meters): "))
-    goal_x = float(input("Enter the position in x: "))
-    goal_y = float(input("Enter the position in y: "))
+
+    takeoff_alt = 10
+    goal_x = 5
+    goal_y = 5
+    altitude = 2
+    goal_lat = mav.gps_target.pose.position.latitude + 0.00005
+    goal_long = mav.gps_target.pose.position.longitude + 0.00005
+
     mav.takeoff(takeoff_alt)
     mav.rate.sleep()
     actual_x = mav.drone_pose.pose.position.x
@@ -24,8 +28,12 @@ def go():
             actual_x = mav.drone_pose.pose.position.x
             actual_y = mav.drone_pose.pose.position.y
             actual_dist = np.sqrt((goal_x - actual_x)**2 + (goal_y - actual_y)**2)
-    mav.rate.sleep()
+            mav.rate.sleep()
+    mav.hold(5)
+    mav.set_altitude(altitude)
+    #mav.go_gps_target(goal_lat, goal_long)
     mav.land()
+    mav.disarm()
 
 if __name__ == "__main__":
     go()
