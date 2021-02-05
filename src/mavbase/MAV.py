@@ -8,6 +8,7 @@ from geometry_msgs.msg import PoseStamped, TwistStamped
 from mavros_msgs.msg import State, ExtendedState, PositionTarget
 from geographic_msgs.msg import GeoPoseStamped
 from sensor_msgs.msg import BatteryState, NavSatFix
+import numpy as np
 import math
 import time
 import LatLon 
@@ -210,7 +211,7 @@ class MAV:
         else:
             rospy.loginfo("DRONE ALREADY ARMED")
         self.rate.sleep()
-        
+        rospy.logwarn("EXECUTING TAKEOFF METHODS")
         p = self.drone_pose.pose.position.z
         time=0
         while abs(self.drone_pose.pose.position.z - height) >= TOL and not rospy.is_shutdown():
@@ -236,15 +237,13 @@ class MAV:
     def RTL(self):
         velocity = 0.7
         ds = velocity/60.0
-
         self.rate.sleep()
         height = self.drone_pose.pose.position.z
-
         self.set_position(0,0,height)
         self.rate.sleep()
-        rospy.loginfo('Position: (' + str(self.drone_pose.pose.position.x) + ', ' + str(self.drone_pose.pose.position.y) + ', ' + str(self.drone_pose.pose.position.z) + ')')
-        rospy.loginfo('Goal Position: (' + str(self.goal_pose.pose.position.x) + ', ' + str(self.goal_pose.pose.position.y) + ', ' + str(self.goal_pose.pose.position.z) + ')')
-
+        if DEBUG: 
+            rospy.loginfo('Position: (' + str(self.drone_pose.pose.position.x) + ', ' + str(self.drone_pose.pose.position.y) + ', ' + str(self.drone_pose.pose.position.z) + ')')
+            rospy.loginfo('Goal Position: (' + str(self.goal_pose.pose.position.x) + ', ' + str(self.goal_pose.pose.position.y) + ', ' + str(self.goal_pose.pose.position.z) + ')')
         t=0
 
         init_time = rospy.get_rostime().secs
@@ -262,10 +261,10 @@ class MAV:
             p = -0.5 + height - (((-2 * (velocity**3) * (time**3)) / height**2) + ((3*(time**2) * (velocity**2))/height))
             # the subtraction of -0.5 is for simulation motives
             if inicial_p > p:
-                self.set_position(self.drone_pose.pose.position.x, self.drone_pose.pose.position.y, p)
+                self.set_position(0, 0, p)
                 inicial_p = p
             else:
-                self.set_position(self.drone_pose.pose.position.x, self.drone_pose.pose.position.y, inicial_p)
+                self.set_position(0, 0, inicial_p)
             
             if DEBUG:
                 rospy.loginfo('LANDING AT ' + str(velocity) + 'm/s')
