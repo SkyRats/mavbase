@@ -29,11 +29,13 @@ def go():
             actual_y = mav.drone_pose.pose.position.y
             actual_dist = np.sqrt((goal_x - actual_x)**2 + (goal_y - actual_y)**2)
             mav.rate.sleep()
+    rospy.loginfo("On hold")
     mav.hold(5)
+    rospy.loginfo("Setting altitude to %s m" %(altitude))
     mav.set_altitude(altitude)
     #mav.go_gps_target(goal_lat, goal_long)
     mav.land()
-    mav.disarm()
+    mav._disarm()
 
 if __name__ == "__main__":
     go()
