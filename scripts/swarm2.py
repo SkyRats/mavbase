@@ -16,5 +16,5 @@ if __name__ == '__main__':
     mav2 = "mav2"
     swarm = SWARM(2)
     #run_delivery receives the latitude and longitude of the availiable drop zone
-    swarm.run_delivery(-93.5, 27.1)
+    swarm.run_delivery(19, -98.9)
     
