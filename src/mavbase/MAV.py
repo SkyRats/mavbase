@@ -326,7 +326,7 @@ class MAV:
         inicial = LatLon(Latitude(self.global_pose.latitude), Longitude(self.global_pose.longitude)) 
         final = LatLon(Latitude(lat), Longitude(lon)) 
         inicial_distance = inicial.distance(final) 
-        actual_dist = inicial_disatance
+        actual_dist = inicial_distance
             
         #initial_heading = palmyra.heading_initial(honolulu) 
         loop_rate = rospy.Rate(2)
