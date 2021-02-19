@@ -17,6 +17,7 @@ TOL = 0.5
 TOL_GLOBAL = 0.000005
 MAX_TIME_DISARM = 15
 ALT_TOL = 0.1
+DEBUG = False
 
 ### mavros_params.yaml ###
 mavros_local_position_pub = rospy.get_param("/mavros_local_position_pub")
@@ -181,24 +182,25 @@ class SWARM:
 
             self.set_mode("OFFBOARD", 2)
             if not mav.drone_state.armed:
-                rospy.logwarn("ARMING DRONE")
+                rospy.logwarn("ARMING DRONES")
                 fb = mav.arm(True)
                 while not fb.success:
                     rospy.logwarn("ARMING DRONE {}".format(fb))
                     fb = mav.arm(True)
                     self.rate.sleep()
-                    rospy.loginfo("DRONE ARMED")
+                    rospy.loginfo("DRONES ARMED")
             else:
                 rospy.loginfo("DRONE ALREADY ARMED")
 
             self.rate.sleep()
         rospy.loginfo("STARTING TAKEOFF")
         while abs(self.mavs[0].drone_pose.pose.position.z - height) >= ALT_TOL:
-            for mav in self.mavs:
-                #rospy.loginfo("TAKEOFF: SETTING ALTITUDE")
-                #rospy.logwarn("ALTITUDE: " + str(mav.drone_pose.pose.position.z))
-                self.set_position(mav.drone_pose.pose.position.x, mav.drone_pose.pose.position.y, height)
-                self.rate.sleep()
+            if DEBUG:
+                for mav in self.mavs:
+                    rospy.loginfo("TAKEOFF: SETTING ALTITUDE")
+                    rospy.logwarn("ALTITUDE: " + str(mav.drone_pose.pose.position.z))
+            self.set_position(mav.drone_pose.pose.position.x, mav.drone_pose.pose.position.y, height)
+            self.rate.sleep()
         rospy.loginfo("TAKEOFF COMPLETE")
         return "done"
 
@@ -208,6 +210,7 @@ class SWARM:
 
     def hold(self, time):
         now = rospy.Time.now()
+        rospy.logwarn("On hold")
         while not rospy.Time.now() - now > rospy.Duration(secs=time):
             for mav in self.mavs:
                 mav.local_position_pub.publish(mav.drone_pose)
@@ -222,9 +225,10 @@ class SWARM:
             self.rate.sleep()
             rospy.logwarn('LANDING')
             while not mav.LAND_STATE == ExtendedState.LANDED_STATE_ON_GROUND or rospy.get_rostime().secs - init_time < (height/velocity)*1.3:
-                #rospy.logwarn('Landing')
-                #rospy.loginfo('Height: ' + str(abs(mav.drone_pose.pose.position.z)))
-                ################# Velocity Control #################
+                #if DEBUG:
+                #    rospy.logwarn('Landing')
+                #    rospy.loginfo('Height: ' + str(abs(mav.drone_pose.pose.position.z)))
+                ################## Velocity Control #################
                 self.set_vel(0, 0, -velocity, 0, 0, 0)
                 self.rate.sleep()
             rospy.logwarn("LANDED_STATE: ON GROUND\nDISARMING")
@@ -249,6 +253,7 @@ class SWARM:
                 i += 1
 
     def set_altitude(self, altitude):
+        rospy.logwarn("SETTING ALTITUDE TO " + str(altitude) + " m")
         for mav in self.mavs:
             for i in range(100):
                 self.set_position(mav.drone_pose.pose.position.x, mav.drone_pose.pose.position.y, altitude)
@@ -263,15 +268,10 @@ class SWARM:
         return x,y
 
     def run_delivery(self, lat, lon):  # function for swarm package delivery
-        height = 10
-
-        self.takeoff(height)
-        self.rate.sleep()
 
         init_lat = self.mavs[0].global_pose.latitude  # inicial latitude of the fisrt drone in the vector
         init_lon = self.mavs[0].global_pose.longitude  # inicial longitude of the fisrt drone in the vector
 
-        
         ### CONVERSAO GLOBAL - CARTESIANO ###
 
         init_x, init_y = self.get_cartesian(init_lat, init_lon)
@@ -292,17 +292,18 @@ class SWARM:
 
         ### PARAMETRIZACAO ###
 
-        velocity = 5
+        velocity = 1
         init_time = rospy.get_rostime().secs
 
-        for mav in self.mavs:
-            rospy.logwarn("GLOBAL POSE: " + str(mav.global_pose))
-            rospy.logwarn("LOCAL POSE: " + str(mav.drone_pose.pose.position))
-            rospy.logwarn("GOAL POSE: x: " + str(dist_x) + " y:" + str(dist_y))
+        for i in range(len(self.mavs)):
+            rospy.loginfo("GLOBAL POSE OF MAV" + str(i) + ": latitude: " + str(self.mavs[i].global_pose.latitude) + "  longitude: " + str(self.mavs[i].global_pose.longitude))
+            rospy.loginfo("LOCAL POSE OF MAV" + str(i) + ": x:" + str(self.mavs[i].drone_pose.pose.position.x) + " y:" + str(self.mavs[i].drone_pose.pose.position.y))
+        rospy.loginfo("GOAL POSE: x: " + str(dist_x) + " y:" + str(dist_y))
 
         actual_x = init_x
         actual_y = init_y
         actual_dist = dist_tot
+        rospy.logwarn("DELIVERY TRAJECTORY INITIALIZED")
         while actual_dist >= TOL and not rospy.is_shutdown():
             sec = rospy.get_rostime().secs 
             time = sec - init_time 
@@ -318,17 +319,17 @@ class SWARM:
             calc_x = (dist_x-actual_x)**2
             calc_y = (dist_y - actual_y)**2
             actual_dist = np.sqrt(calc_x + calc_y)
-            #rospy.loginfo("Pose in x: " + str(actual_x))
-            #rospy.loginfo("Pose in y: " + str(actual_y))
-            rospy.logwarn("actual_dist = " + str(actual_dist))
-            rospy.loginfo("dist in x: " + str(abs(dist_x - actual_x)))
-            rospy.loginfo("dist in y: " + str(abs(dist_y - actual_y)))
-
-        #for mav in self.mavs:
-        #    rospy.logwarn("GLOBAL POSE: " + str(mav.global_pose))
-        #    rospy.logwarn("LOCAL POSE: " + str(mav.drone_pose.pose.position))
-        #    rospy.logwarn("GOAL POSE: x: " + str(dist_x) + " y:" + str(dist_y))
-        rospy.logwarn("PACKAGE DELIVERED ON DROP ZONE")
+            if DEBUG:
+                rospy.loginfo("Pose in x: " + str(actual_x))
+                rospy.loginfo("Pose in y: " + str(actual_y))
+                rospy.logwarn("actual_dist = " + str(actual_dist))
+                rospy.loginfo("dist in x: " + str(abs(dist_x - actual_x)))
+                rospy.loginfo("dist in y: " + str(abs(dist_y - actual_y)))
+        if DEBUG:
+            for mav in self.mavs:
+                rospy.loginfo("GLOBAL POSE OF MAV" + str(i) + ": latitude: " + str(self.mavs[i].global_pose.latitude) + "  longitude: " + str(self.mavs[i].global_pose.longitude))
+                rospy.loginfo("LOCAL POSE: x:" + str(mav.drone_pose.pose.position.x) + " y:" + str(mav.drone_pose.pose.position.y))
+        rospy.logwarn("DELIVERY TRAJECTORY COMPLETE")
 
         self.rate.sleep()
         self.land()
