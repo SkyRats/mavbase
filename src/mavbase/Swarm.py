@@ -13,11 +13,7 @@ import math
 import time
 import numpy as np
 
-TOL = 0.5
-TOL_GLOBAL = 0.000005
-MAX_TIME_DISARM = 15
-ALT_TOL = 0.1
-DEBUG = False
+
 
 ### mavros_params.yaml ###
 mavros_local_position_pub = rospy.get_param("/mavros_local_position_pub")
@@ -106,6 +102,16 @@ class SWARM:
             self.mavs.append(Bee(i))
 
         self.pack_pose = PoseStamped()
+        self.tol = 0.5
+        self.tol_global = 0.000005
+        self.max_time_disarm = 15
+        self.alt_tol = 0.1
+        self.debug = False
+        TOL = self.tol
+        TOL_GLOBAL = self.tol_global
+        MAX_TIME_DISARM = self.max_time_disarm
+        ALT_TOL = self.alt_tol
+        DEBUG = self.debug
 
     ####### Set Position and Velocity ################
     def set_position(self, x, y, z):
@@ -201,9 +207,13 @@ class SWARM:
     def hold(self, time):
         now = rospy.Time.now()
         rospy.logwarn("On hold")
+        positions = []
+        for mav in self.mavs:
+            positions.append(mav.drone_pose)
+            
         while not rospy.Time.now() - now > rospy.Duration(secs=time):
-            for mav in self.mavs:
-                mav.local_position_pub.publish(mav.drone_pose)
+            for i in len(self.mavs):
+                mavs[i].local_position_pub.publish(positions[i])
                 self.rate.sleep()
 
     def land(self):
