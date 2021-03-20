@@ -13,11 +13,6 @@ import math
 import time
 import LatLon 
 
-TOL = 0.5
-TOL_GLOBAL = 0.00001
-MAX_TIME_DISARM = 15
-ALT_TOL = 0.1
-DEBUG = False
 
 ### mavros_params.yaml ###
 mavros_local_position_pub = rospy.get_param("/mavros_local_position_pub")
@@ -57,7 +52,18 @@ class MAV:
         self.battery = BatteryState()
         self.global_pose = NavSatFix()
         self.gps_target = GeoPoseStamped()
+        self.tol = 0.5
+        self.tol_global = 0.00001
+        self.max_time_disarm = 15
+        self.alt_tol = 0.1
+        self.debug = False
 
+        TOL = self.tol
+        TOL_GLOBAL = self.tol_global
+        MAX_TIME_DISARM = self.max_time_disarm 
+        ALT_TOL = self.alt_tol
+        DEBUG = self.debug
+        
         ############# Services ##################
         self.arm = rospy.ServiceProxy(mavros_arm, CommandBool)
         self.set_mode_srv = rospy.ServiceProxy(mavros_set_mode, SetMode)
@@ -74,8 +80,6 @@ class MAV:
         self.battery_sub = rospy.Subscriber(mavros_battery_sub, BatteryState, self.battery_callback)
         self.global_position_sub = rospy.Subscriber(mavros_global_position_sub, NavSatFix, self.global_callback)
         self.extended_state_sub = rospy.Subscriber(extended_state_sub, ExtendedState, self.extended_state_callback, queue_size=2)        
-        
-        
 
         self.LAND_STATE = ExtendedState.LANDED_STATE_UNDEFINED # landing state
         '''
@@ -84,8 +88,8 @@ class MAV:
         LANDED_STATE_IN_AIR = 2
         LANDED_STATE_TAKEOFF = 3
         LANDED_STATE_LANDING = 4
-
         '''
+
         service_timeout = 30
         rospy.loginfo("waiting for ROS services")
         try:
@@ -95,7 +99,6 @@ class MAV:
             rospy.loginfo("ROS services are up")
         except rospy.ROSException:
             rospy.logerr("failed to connect to services")
-
 
     ###### Callback Functions ##########
     def state_callback(self, state_data):
@@ -275,8 +278,9 @@ class MAV:
 
     def hold(self, time):
         now = rospy.Time.now()
+        position = self.drone_pose
         while not rospy.Time.now() - now > rospy.Duration(secs=time):
-            self.local_position_pub.publish(self.drone_pose)
+            self.local_position_pub.publish(position)
             self.rate.sleep()
 
     def land(self):

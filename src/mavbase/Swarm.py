@@ -77,16 +77,6 @@ class Bee:
         self.set_mode_srv       = rospy.ServiceProxy("/uav{}/{}".format(index, mavros_set_mode), SetMode)
         self.LAND_STATE         = ExtendedState.LANDED_STATE_UNDEFINED # landing state
 
-        service_timeout = 30
-        rospy.loginfo("waiting for ROS services")
-        try:
-            rospy.wait_for_service('mavros/param/get', service_timeout)
-            rospy.wait_for_service('mavros/cmd/arming', service_timeout)
-            rospy.wait_for_service('mavros/set_mode', service_timeout)
-            rospy.loginfo("ROS services are up")
-        except rospy.ROSException:
-            rospy.logerr("failed to connect to services")
-
     """ CALLBACK FUNCTIONS """
     def state_callback(self, state_data):
         self.drone_state = state_data
