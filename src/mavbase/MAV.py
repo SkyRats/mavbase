@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import mavros_msgs
@@ -11,7 +11,7 @@ from sensor_msgs.msg import BatteryState, NavSatFix
 import numpy as np
 import math
 import time
-import LatLon 
+#import LatLon 
 
 TOL = 0.5
 TOL_GLOBAL = 0.00001
@@ -118,11 +118,10 @@ class MAV:
         self.global_pose = global_data
 
     ####### Set Position and Velocity ################
-    def set_position_target(self, type_mask, x_position=0, y_position=0, z_position=0, x_velocity=0, y_velocity=0, z_velocity=0, x_aceleration=0, y_aceleration=0, z_aceleration=0, yaw=0, yaw_rate=0):
-        self.pose_target.coordinate_frame = PositionTarget.FRAME_LOCAL_NED
+    def set_position_target(self, type_mask, x_position=0, y_position=0, z_position=0, x_velocity=0, y_velocity=0, z_velocity=0, x_aceleration=0, y_aceleration=0, z_aceleration=0, yaw=0, yaw_rate=0, coordinate_frame = PositionTarget.FRAME_LOCAL_NED):
+        self.pose_target.coordinate_frame = coordinate_frame #Use PositionTarget.FRAME_LOCAL_NED para movimento relativo ao corpo do drone  
         self.pose_target.type_mask = type_mask
         #https://mavlink.io/en/messages/common.html#POSITION_TARGET_TYPEMASK
-        #4095 ignores every dimension (subtract the usefull ones from it)
 
         self.pose_target.position.x = x_position
         self.pose_target.position.y = y_position
