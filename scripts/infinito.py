@@ -11,7 +11,7 @@ def go():
     rospy.init_node("mav_test")
     mav = MAV("1")
 
-    takeoff_alt = 10
+    takeoff_alt = 5
     t = -math.pi/2
     goal_x = 4*math.cos(t)
     goal_y = 4*math.cos(t) * math.sin(t)
@@ -35,11 +35,7 @@ def go():
         actual_y = mav.drone_pose.pose.position.y
         actual_dist = np.sqrt((goal_x - actual_x)**2 + (goal_y - actual_y)**2)
         mav.rate.sleep()
-    rospy.loginfo("On hold")
-    mav.hold(5)
-    rospy.loginfo("Setting altitude to %s m" %(altitude))
-    mav.set_altitude(altitude)
-    #mav.go_gps_target(goal_lat, goal_long)
+    rospy.loginfo("Infinity script complete")
     mav.land()
     mav._disarm()
 
