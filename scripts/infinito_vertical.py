@@ -35,6 +35,7 @@ def go():
         actual_z = mav.drone_pose.pose.position.z
         actual_dist = np.sqrt((goal_x - actual_x)**2 + (goal_z - actual_z)**2)
         mav.rate.sleep()
+    mav.hold(2)
     rospy.loginfo("Infinity completed")
     mav.land()
     mav._disarm()
