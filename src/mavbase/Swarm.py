@@ -16,6 +16,7 @@ import numpy as np
 
 
 ### mavros_params.yaml ###
+"""
 mavros_local_position_pub = rospy.get_param("/mavros_local_position_pub")
 mavros_velocity_pub= rospy.get_param("/mavros_velocity_pub")
 mavros_local_atual = rospy.get_param("/mavros_local_atual")
@@ -26,7 +27,20 @@ mavros_battery_sub = rospy.get_param("/mavros_battery_sub")
 extended_state_sub = rospy.get_param("/extended_state_sub")
 mavros_pose_target_sub = rospy.get_param("/mavros_pose_target_sub")
 mavros_global_position_sub = rospy.get_param("/mavros_global_position_sub")
-mavros_set_global_pub = rospy.get_param("/mavros_set_global_pub")
+mavros_set_global_pub = rospy.get_param("/mavros_set_global_pub") 
+"""
+
+mavros_local_position_pub = "/setpoint_position/local"
+mavros_velocity_pub= "/setpoint_velocity/cmd_vel"
+mavros_local_atual = "/local_position/pose"
+mavros_state_sub = "/state"
+mavros_arm = "/cmd/arming"
+mavros_set_mode = "/set_mode"
+mavros_battery_sub = "/battery"
+extended_state_sub = "/extended_state"
+mavros_pose_target_sub = "/setpoint_raw/local"
+mavros_global_position_sub = "/global_position/global"
+mavros_set_global_pub = "/setpoint_position/global"
 
 
 class Bee:
