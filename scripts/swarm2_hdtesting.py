@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import math
@@ -28,7 +28,6 @@ def run_tests():
         x_refpose = swarm.mavs[0].drone_pose.pose.position.x
         y_refpose = swarm.mavs[0].drone_pose.pose.position.y
         dist = np.sqrt((goal_x - x_refpose)**2 + (goal_y - y_refpose)**2)
-    
     swarm.set_altitude(alt)
     swarm.hold(5)
     swarm.land()
