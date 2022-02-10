@@ -7,8 +7,7 @@ Aqui pode ser encontrada a documentação completa da classe MAV.
 
 ## Sobre a classe
 
-A classe MAV tem o objetivo de compilar as principais funções de controle de drones, usando ROS. O **arquivo original** pode ser encontrado no package 
-viscon em ```mavbase/src/mavbase``` .
+A classe MAV tem o objetivo de compilar as principais funções de controle de drones, usando ROS. O **arquivo original** pode ser encontrado em ```mavbase/src/mavbase``` .
 
 ## Mensagens
 
@@ -79,3 +78,21 @@ A trajetória é parametrizada utilizando posições e por meio de controle prop
 #### ```set_altitude```
 Mantém o drone na mesma posição e configura uma altura determinada, sem pousá-lo. A trajetória é parametrizada da mesma forma que na função ```takeoff```. 
 
+# Sobre a Classe SWARM
+
+Similar à classe MAV, a SWARM compila as funções básicas para controle de um swarm de drones. A ideia é ser um controle genérico de n drones. 
+
+## Classe ```Bee```
+
+ Quando um objeto da SWARM é criado, ele leva um argumento de quantos drones serão controlados, e cada um é inicializado como um objeto de uma outra classe, a ```Bee```. Assim, cada objeto da classe ```Bee```, por sua vez, carrega as características especificas do drone que representa, como a posição, a velocidade e o estado, que são recebidas pelas funções de callback. 
+
+Ela é usada, portanto, em conjunto com a classe SWARM apenas como forma de guardar as informações individuais dos drones, enquanto a SWARM recebe como objeto um vetor que contém esses drones e ela é que é responsável por mudar essas informações de modo conjunto entre todos os veículos.
+
+
+## Funções
+
+As funções da classe SWARM são muito similares às da classe MAV, com a diferença de que os comandos são feitos para o vetor de drones que é objeto da classe. Ou seja, quando setamos uma posição com a função ```set_position```, por exemplo, setamos essa posição para todos os drones do vetor, sendo que ela é relativa para cada drone, o que evita que todos acabem na mesma posição e colidam (em outras palavras, cada um se move em relação ao seu próprio sistema de coordenadas).
+
+### ```run_delivrey```
+
+Essa é a única função que é única da classe SWARM e não está presente na MAV. A ideia dela é realizar um trajeto cooperativo entre os drones, inspirado em uma entrega cooperativa de um pacote. Ela recebe uma latitude e uma longitude e esses argumentos são passados como posições globais para as quais o drone 0 deve ir, o qual é tido como referência para o vetor de drones que é objeto da classe. Essa posição é transformada em coordenadas cartesianas e é passada como argumento para a posição final desse drone. 
