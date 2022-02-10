@@ -93,6 +93,6 @@ Ela é usada, portanto, em conjunto com a classe SWARM apenas como forma de guar
 
 As funções da classe SWARM são muito similares às da classe MAV, com a diferença de que os comandos são feitos para o vetor de drones que é objeto da classe. Ou seja, quando setamos uma posição com a função ```set_position```, por exemplo, setamos essa posição para todos os drones do vetor, sendo que ela é relativa para cada drone, o que evita que todos acabem na mesma posição e colidam (em outras palavras, cada um se move em relação ao seu próprio sistema de coordenadas).
 
-### ```run_delivrey```
+### ```run_delivery```
 
 Essa é a única função que é única da classe SWARM e não está presente na MAV. A ideia dela é realizar um trajeto cooperativo entre os drones, inspirado em uma entrega cooperativa de um pacote. Ela recebe uma latitude e uma longitude e esses argumentos são passados como posições globais para as quais o drone 0 deve ir, o qual é tido como referência para o vetor de drones que é objeto da classe. Essa posição é transformada em coordenadas cartesianas e é passada como argumento para a posição final desse drone. 
